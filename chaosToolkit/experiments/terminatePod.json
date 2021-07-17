@@ -1,0 +1,59 @@
+{
+    "version": "1.0.0",
+    "title": "experiment-terminate-pods",
+    "description": "N/A",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high",
+        "performance": "medium",
+        "security": "none"
+    },
+    "steady-state-hypothesis": {
+        "title": "Health check",
+        "probes": [
+            {
+                "type": "probe",
+                "name": "Health-check-should-pass",
+                "tolerance": 200,
+                "provider": {
+                    "type": "http",
+                    "url": "https://host.com/v1/abc/hello"
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "probe",
+            "name": "count_pods",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.pod.probes",
+                "func": "count_pods",
+                "arguments": {
+                    "label_selector": "app=label",
+                    "phase": null,
+                    "ns": "namespace"
+                }
+            }
+        },
+        {
+            "type": "action",
+            "name": "terminate_pods",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.pod.actions",
+                "func": "terminate_pods",
+                "arguments": {
+                    "label_selector": "app=label",
+                    "name_pattern": "^label",
+                    "rand": true,
+                    "ns": "namespace"
+                }
+            },
+            "pauses": {
+                "after": 5
+            }
+        }
+    ]
+}

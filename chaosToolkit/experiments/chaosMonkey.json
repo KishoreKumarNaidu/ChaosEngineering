@@ -1,0 +1,141 @@
+{
+    "version": "1.0.0",
+    "title": "experiment-chaos-monkey",
+    "description": "N/A",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high",
+        "performance": "medium",
+        "security": "none"
+    },
+    "steady-state-hypothesis": {
+        "title": "Health check",
+        "probes": [
+            {
+                "type": "probe",
+                "name": "Health-check-should-pass",
+                "tolerance": 200,
+                "provider": {
+                    "expected_status": 200,
+                    "type": "http",
+                    "timeout": [
+                        3,
+                        10
+                    ],
+                    "url": "http://localhost:8080/v1/abc/pqr/login",
+                    "method": "POST",
+                    "headers": {
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    "arguments": {
+                        "username": "username@gmail.com",
+                        "password": "test123"
+                    }
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "enable_chaosmonkey",
+            "provider": {
+                "arguments": {
+                    "base_url": "http://localhost:8080/actuator",
+                    "headers": {
+                        "Authorization": "Basic TW9ua2V5QWRtaW46bW9ua2V5"
+                    }
+                },
+                "func": "enable_chaosmonkey",
+                "module": "chaosspring.actions",
+                "type": "python"
+            },
+            "pauses": {
+                "after": 1
+            }
+        },
+        {
+            "type": "action",
+            "name": "configure_repository_watcher",
+            "tolerance": 200,
+            "provider": {
+                "type": "http",
+                "url": "http://localhost:8080/actuator/chaosmonkey/watchers",
+                "method": "POST",
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Authorization": "Basic TW9ua2V5QWRtaW46bW9ua2V5"
+                },
+                "arguments": {
+                    "controller": false,
+                    "restController": false,
+                    "service": true,
+                    "repository": false,
+                    "component": false
+                }
+            }
+        },
+        {
+            "type": "action",
+            "name": "configure_assaults",
+            "provider": {
+                "arguments": {
+                    "base_url": "http://localhost:8080/actuator",
+                    "assaults_configuration": {
+                        "level": 1,
+                        "latencyRangeStart": 4000,
+                        "latencyRangeEnd": 5000,
+                        "latencyActive": true,
+                        "exceptionsActive": false,
+                        "killApplicationActive": false,
+                        "restartApplicationActive": false
+                    },
+                    "headers": {
+                        "Authorization": "Basic TW9ua2V5QWRtaW46bW9ua2V5"
+                    }
+                },
+                "func": "change_assaults_configuration",
+                "module": "chaosspring.actions",
+                "type": "python"
+            }
+        },
+        {
+            "type": "probe",
+            "name": "call-login-user-endpoint-with-chaosmonkey",
+            "tolerance": 200,
+            "background": true,
+            "provider": {
+                "expected_status": 200,
+                "type": "http",
+                "url": "http://localhost:8080/v1/abc/pqr/login",
+                "method": "POST",
+                "headers": {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                "arguments": {
+                    "username": "username@gmail.com",
+                    "password": "test123"
+                }
+            }
+        }
+    ],
+    "rollbacks": [
+        {
+            "name": "disable_chaosmonkey",
+            "provider": {
+                "arguments": {
+                    "base_url": "http://localhost:8080/actuator",
+                    "headers": {
+                        "Authorization": "Basic TW9ua2V5QWRtaW46bW9ua2V5"
+                    }
+                },
+                "func": "disable_chaosmonkey",
+                "module": "chaosspring.actions",
+                "type": "python"
+            },
+            "type": "action"
+        }
+    ]
+}

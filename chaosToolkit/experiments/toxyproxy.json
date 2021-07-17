@@ -1,0 +1,122 @@
+{
+    "version": "1.0.0",
+    "title": "experiment-create-proxy",
+    "description": "N/A",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high",
+        "performance": "medium",
+        "security": "none"
+    },
+    "configuration": {
+        "toxiproxy_host": "localhost",
+        "some_environment_variable": {
+            "type": "environment",
+            "key": "ENVIRONMENT_VARIABLE"
+        }
+    },
+    "steady-state-hypothesis": {
+        "title": "Health check",
+        "probes": [
+            {
+                "type": "probe",
+                "name": "Health-check-should-pass",
+                "tolerance": 200,
+                "provider": {
+                    "expected_status": 200,
+                    "type": "http",
+                    "url": "http://localhost:8080/v1/tbx/graph/api",
+                    "method": "GET",
+                    "headers": {
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    }
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "setup_toxiproxy_proxy",
+            "provider": {
+                "type": "python",
+                "module": "chaostoxi.proxy.actions",
+                "func": "create_proxy",
+                "arguments": {
+                    "proxy_name": "graph_proxy",
+                    "listen_port": 7070,
+                    "upstream_host": "localhost",
+                    "upstream_port": 8080
+                }
+            },
+            "pauses": {
+                "after": 1
+            }
+        },
+        {
+            "type": "probe",
+            "name": "proxy-is-found",
+            "tolerance": true,
+            "background": true,
+            "provider": {
+                "type": "python",
+                "module": "chaostoxi.proxy.probes",
+                "func": "proxy_exist",
+                "arguments": {
+                    "proxy_name": "graph_proxy"
+                }
+            }
+        },
+        {
+            "type": "probe",
+            "name": "call-graph-api-via-proxy",
+            "tolerance": 200,
+            "background": true,
+            "provider": {
+                "expected_status": 200,
+                "type": "http",
+                "url": "http://localhost:7070/v1/tbx/graph/retrieveRedirectUrl/262gjhe6d-jk9a8-uah7-mdi0-jsis2u26t393",
+                "method": "GET",
+                "headers": {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                }
+            }
+        },
+        {
+            "type": "action",
+            "name": "create_latency_toxic",
+            "provider": {
+                "type": "python",
+                "module": "chaostoxi.toxic.actions",
+                "func": "create_latency_toxic",
+                "arguments": {
+                    "for_proxy": "graph_proxy",
+                    "toxic_name": "latency_toxic",
+                    "latency": 6000,
+                    "jitter": 200
+                }
+            },
+            "pauses": {
+                "after": 1
+            }
+        },
+        {
+            "type": "probe",
+            "name": "call-graph-api-via-proxy-with-toxic",
+            "tolerance": 200,
+            "background": true,
+            "provider": {
+                "expected_status": 200,
+                "type": "http",
+                "url": "http://localhost:7070/v1/tbx/graph/retrieveClientRedirectUrl/262gjhe6d-jk9a8-uah7-mdi0-jsis2u26t393",
+                "method": "GET",
+                "headers": {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                }
+            }
+        }
+    ]
+}
