@@ -25,7 +25,7 @@
                 "provider": {
                     "expected_status": 200,
                     "type": "http",
-                    "url": "http://localhost:8080/v1/tbx/graph/api",
+                    "url": "http://localhost:8080/v1/abc/graph/api",
                     "method": "GET",
                     "headers": {
                         "Accept": "application/json",
@@ -76,7 +76,7 @@
             "provider": {
                 "expected_status": 200,
                 "type": "http",
-                "url": "http://localhost:7070/v1/tbx/graph/retrieveRedirectUrl/262gjhe6d-jk9a8-uah7-mdi0-jsis2u26t393",
+                "url": "http://localhost:7070/v1/abc/graph/retrieveUrl/262gjhe6d-jk9a8-uah7-mdi0-jsis2u26t393",
                 "method": "GET",
                 "headers": {
                     "Accept": "application/json",
@@ -110,7 +110,7 @@
             "provider": {
                 "expected_status": 200,
                 "type": "http",
-                "url": "http://localhost:7070/v1/tbx/graph/retrieveClientRedirectUrl/262gjhe6d-jk9a8-uah7-mdi0-jsis2u26t393",
+                "url": "http://localhost:7070/v1/abc/graph/retrieveUrl/262gjhe6d-jk9a8-uah7-mdi0-jsis2u26t393",
                 "method": "GET",
                 "headers": {
                     "Accept": "application/json",
